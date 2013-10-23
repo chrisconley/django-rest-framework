@@ -125,10 +125,11 @@ class RelatedField(WritableField):
 
     ### Regular serializer stuff...
 
-    def many_to_native(self, objects):
+    def many_to_native(self, objects, parent_object=None):
         return [self.to_native(item) for item in objects]
 
     def field_to_native(self, obj, field_name):
+        parent_object = obj
         try:
             if self.source == '*':
                 return self.to_native(obj)
@@ -148,11 +149,11 @@ class RelatedField(WritableField):
 
         if self.many:
             if is_simple_callable(getattr(value, 'all', None)):
-                return self.many_to_native(value.all())
+                return self.many_to_native(value.all(), parent_object=parent_object)
             else:
                 # Also support non-queryset iterables.
                 # This allows us to also support plain lists of related items.
-                return self.many_to_native(value)
+                return self.many_to_native(value, parent_object=parent_object)
         return self.to_native(value)
 
     def field_from_native(self, data, files, field_name, into):

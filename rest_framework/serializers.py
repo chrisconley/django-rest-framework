@@ -326,7 +326,7 @@ class BaseSerializer(WritableField):
 
         return ret
 
-    def many_to_native(self, objects):
+    def many_to_native(self, objects, parent_object=None):
         return [self.to_native(item) for item in objects]
 
     def from_native(self, data, files):
@@ -359,6 +359,8 @@ class BaseSerializer(WritableField):
         Override default so that the serializer can be used as a nested field
         across relationships.
         """
+        parent_object = obj
+
         if self.source == '*':
             return self.to_native(obj)
 
@@ -375,7 +377,7 @@ class BaseSerializer(WritableField):
             return None
 
         if is_simple_callable(getattr(value, 'all', None)):
-            return self.many_to_native(value.all())
+            return self.many_to_native(value.all(), parent_object=parent_object)
 
         if value is None:
             return None
@@ -386,7 +388,7 @@ class BaseSerializer(WritableField):
             many = hasattr(value, '__iter__') and not isinstance(value, (Page, dict, six.text_type))
 
         if many:
-            return self.many_to_native(value)
+            return self.many_to_native(value, parent_object=parent_object)
         return self.to_native(value)
 
     def field_from_native(self, data, files, field_name, into):
